@@ -17,6 +17,7 @@ main_frame = Frame(root)  # Constructs a frame object
 notes_frame = Frame(root)
 root.geometry("400x750")
 root.resizable(False, False)  # User can't resize the window
+indicator = 0
 
 title = Text(root, bd=2, height=1, width=35)  # Creates a text box
 title.pack()
@@ -24,32 +25,49 @@ title.pack()
 notes = Text(root, bd=2, height=44, width=50)  # Creates a text box
 notes.pack()
 
-submit_button = Button(root, text='Submit', command=create_note)  # Creates a button
-submit_button.pack()
+save_button = Button(root, text='Save', command=create_note)  # Creates a save button
+save_button.pack()
 
 buttons = []
 
+
+def display_note(index):
+    total_text = cur.execute("SELECT * FROM main_notes WHERE title=?", (index,))
+    title.delete('1.0', 'end')
+    text = total_text.fetchall()
+    title.insert(INSERT, text[0][0])
+
+    notes.delete('1.0', 'end')
+    notes.insert(INSERT, text[0][1])
+
+
 def open_menu():
+    global indicator
     title.pack_forget()  # Hides the title entry box
     notes.pack_forget()  # Hides the notes entry box
-    submit_button.pack_forget()  # Hides the submit button
+    save_button.pack_forget()  # Hides the save button
 
     count = 0
+
     for i in cur.execute('SELECT * FROM main_notes'):
         count = count + 1
 
-    for index, i in enumerate(cur.execute('SELECT * FROM main_notes')):
-        buttons.append(Button(root, text='Note' + str(i[0]), height=1, bd=0, command=open_menu))
-        buttons[index].grid(row=index, column=0, columnspan=5)
+    for index1, i in enumerate(cur.execute('SELECT * FROM main_notes')):
+        buttons.append(Button(root, text='Note ' + str(i[0]), height=1, bd=0, command=lambda i=i: display_note(str(i[0]))))
+        if indicator == 0:
+            buttons[index1].grid(row=index1, column=0, columnspan=5, pady=(20,0), sticky=W)
+            indicator = 1
+        else:
+            buttons[index1].grid(row=index1, column=0, columnspan=5, sticky=W)
 
 
 def open_main():
-    for i in buttons:
+    for i in buttons:  # Hides all the buttons
         i.grid_forget()
 
     title.pack()  # Hides the title entry box
     notes.pack()  # Hides the notes entry box
-    submit_button.pack()  # Hides the submit button
+    save_button.pack()  # Hides the save button
 
 
 menu = Button(root, text='Notes', height=1, bd=0, command=open_menu)  # Creates a menu button
