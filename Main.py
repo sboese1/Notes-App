@@ -9,7 +9,10 @@ def create_note():
     title_text = title.get('1.0', END)  # Gets all the text from the title entry
     note_text = notes.get('1.0', END)  # Gets all the text from the notes entry
 
-    cur.execute("INSERT INTO main_notes VALUES (?, ?)", (title_text.strip(), note_text.strip()))  # Inserts the title and notes entries into the title and note spot in the database
+    try:
+        cur.execute("INSERT INTO main_notes VALUES (?, ?)", (title_text.strip(), note_text.strip()))  # Inserts the title and notes entries into the title and note spot in the database
+    except sqlite3.IntegrityError:
+        cur.execute("UPDATE main_notes SET note=? WHERE title=?", (note_text.strip(), title_text.strip()))
 
 
 root = Tk()  # Initializes the tkinter object
@@ -46,28 +49,22 @@ def open_menu():
     title.pack_forget()  # Hides the title entry box
     notes.pack_forget()  # Hides the notes entry box
     save_button.pack_forget()  # Hides the save button
-
-    count = 0
-
-    for i in cur.execute('SELECT * FROM main_notes'):
-        count = count + 1
+    menu.place_forget()
 
     for index1, i in enumerate(cur.execute('SELECT * FROM main_notes')):
-        buttons.append(Button(root, text='Note ' + str(i[0]), height=1, bd=0, command=lambda i=i: display_note(str(i[0]))))
-        if indicator == 0:
-            buttons[index1].grid(row=index1, column=0, columnspan=5, pady=(20,0), sticky=W)
-            indicator = 1
-        else:
-            buttons[index1].grid(row=index1, column=0, columnspan=5, sticky=W)
+        buttons.append(Button(root, text=str(i[0]), height=1, bd=0, command=lambda i=i: display_note(str(i[0]))))
+        buttons[index1].grid(row=index1, column=0, columnspan=5, sticky=W)
 
 
 def open_main():
     for i in buttons:  # Hides all the buttons
         i.grid_forget()
+    buttons.clear()
 
     title.pack()  # Hides the title entry box
     notes.pack()  # Hides the notes entry box
     save_button.pack()  # Hides the save button
+    menu.place(x=12, y=0)
 
 
 menu = Button(root, text='Notes', height=1, bd=0, command=open_menu)  # Creates a menu button
