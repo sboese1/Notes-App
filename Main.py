@@ -5,6 +5,7 @@ con = sqlite3.connect('main.db')  # Connects to be database
 cur = con.cursor()  # Gives an actionable variable for the database
 
 
+# Creates a note in the database
 def create_note():
     title_text = title.get('1.0', END)  # Gets all the text from the title entry
     note_text = notes.get('1.0', END)  # Gets all the text from the notes entry
@@ -17,8 +18,7 @@ def create_note():
 
 root = Tk()  # Initializes the tkinter object
 main_frame = Frame(root)  # Constructs a frame object
-notes_frame = Frame(root)
-root.geometry("400x750")
+root.geometry("400x750")  # Sets the size of the window
 root.resizable(False, False)  # User can't resize the window
 indicator = 0
 
@@ -34,37 +34,40 @@ save_button.pack()
 buttons = []
 
 
+# Displays the note in the title box and entry box
 def display_note(index):
-    total_text = cur.execute("SELECT * FROM main_notes WHERE title=?", (index,))
-    title.delete('1.0', 'end')
-    text = total_text.fetchall()
-    title.insert(INSERT, text[0][0])
+    total_text = cur.execute("SELECT * FROM main_notes WHERE title=?", (index,))  # Gets all of the text that fits index (title)
+    title.delete('1.0', 'end')  # Clear the title text box
+    text = total_text.fetchall()  # Gets all of the text from total_text
+    title.insert(INSERT, text[0][0])  # Inserts the title text in the title text box
 
-    notes.delete('1.0', 'end')
-    notes.insert(INSERT, text[0][1])
+    notes.delete('1.0', 'end')  # Gets all of the text from notes
+    notes.insert(INSERT, text[0][1])  # Inserts the notes text in the notes text box
 
 
+# Opens the menu that holds all of the notes saved
 def open_menu():
     global indicator
     title.pack_forget()  # Hides the title entry box
     notes.pack_forget()  # Hides the notes entry box
     save_button.pack_forget()  # Hides the save button
-    menu.place_forget()
+    menu.place_forget()  # Hides the menu button
 
-    for index1, i in enumerate(cur.execute('SELECT * FROM main_notes')):
-        buttons.append(Button(root, text=str(i[0]), height=1, bd=0, command=lambda i=i: display_note(str(i[0]))))
-        buttons[index1].grid(row=index1, column=0, columnspan=5, sticky=W)
+    for index1, i in enumerate(cur.execute('SELECT * FROM main_notes')):  # For every item in the database
+        buttons.append(Button(root, text=str(i[0]), height=1, bd=0, command=lambda i=i: display_note(str(i[0]))))  # Create a new button and add it the buttons
+        buttons[index1].grid(row=index1, column=0, columnspan=5, sticky=W)  # Add that button to the grid at index index1
 
 
+# Opens the note-taking form
 def open_main():
     for i in buttons:  # Hides all the buttons
         i.grid_forget()
     buttons.clear()
 
-    title.pack()  # Hides the title entry box
-    notes.pack()  # Hides the notes entry box
-    save_button.pack()  # Hides the save button
-    menu.place(x=12, y=0)
+    title.pack()  # Shows the title entry box
+    notes.pack()  # Shows the notes entry box
+    save_button.pack()  # Shows the save button
+    menu.place(x=12, y=0)  # Places the menu button at those coordinates
 
 
 menu = Button(root, text='Notes', height=1, bd=0, command=open_menu)  # Creates a menu button
